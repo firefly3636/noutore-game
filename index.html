@@ -835,10 +835,8 @@ function initShoppingList() {
         items.map(function(item) { return '<div class="shopping-item">' + item + '</div>'; }).join('');
 
     gameState.timeout = setTimeout(function() {
-        var choices = shuffle(allItems).slice(0, 10);
-        items.forEach(function(item) {
-            if (choices.indexOf(item) === -1) choices[randInt(0, 4)] = item;
-        });
+        var others = allItems.filter(function(item) { return items.indexOf(item) === -1; });
+        var choices = items.slice().concat(shuffle(others).slice(0, 5));
         choices = shuffle(choices);
         gameState.slSelected = [];
         area.innerHTML = '<p class="game-instruction">リストにあった品物を5つ選んでください</p>' +
