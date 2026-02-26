@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脳トレゲーム - 毎日少しずつ、脳を元気に！</title>
+    <meta name="description" content="認知機能を楽しく鍛える脳トレゲーム。記憶力、注意力、言語力、計算力、生活力の5カテゴリ15種類のゲームで毎日脳を元気に。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --blue: #4a90d9;
+            --green: #2ecc71;
+            --orange: #f0a030;
+            --purple: #9b59b6;
+            --pink: #e84393;
+            --bg: #f0f2f5;
+            --white: #ffffff;
+            --text: #333;
+            --text-light: #888;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ===== HOME SCREEN ===== */
+        #home { padding: 24px 16px 100px; max-width: 500px; margin: 0 auto; }
+
+        .brain-icon { text-align: center; padding-top: 32px; font-size: 3.5rem; }
+        .home-title { text-align: center; font-size: 1.8rem; font-weight: 900; margin: 8px 0 4px; }
+        .home-sub { text-align: center; color: var(--text-light); font-size: 0.9rem; margin-bottom: 28px; }
+
+        .category {
+            margin-bottom: 24px;
+        }
+
+        .category-header {
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .cat-memory { background: var(--blue); }
+        .cat-attention { background: var(--green); }
+        .cat-language { background: var(--orange); }
+        .cat-math { background: var(--purple); }
+        .cat-life { background: var(--pink); }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .game-card {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 18px 8px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: none;
+            width: 100%;
+            font-family: inherit;
+            color: var(--text);
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .game-card .g-icon { font-size: 2rem; margin-bottom: 6px; }
+        .game-card .g-name { font-size: 0.85rem; font-weight: 700; }
+        .game-card .g-plays { font-size: 0.7rem; color: var(--text-light); margin-top: 4px; }
+
+        /* ===== GAME SCREEN ===== */
+        #gameScreen {
+            display: none;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .game-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 12px 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover { background: rgba(0,0,0,0.05); }
+
+        .game-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .game-score {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        .game-area {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px;
+            min-height: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+
+        .game-instruction {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* ===== CARD GAME ===== */
+        .card-grid {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .card-grid.g4x4 { grid-template-columns: repeat(4, 70px); }
+        .card-grid.g4x3 { grid-template-columns: repeat(4, 70px); }
+
+        .memory-card {
+            width: 70px;
+            height: 80px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            background: linear-gradient(135deg, var(--blue), #6ab0ff);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            transition: transform 0.3s;
+            color: transparent;
+            user-select: none;
+        }
+
+        .memory-card.flipped {
+            background: var(--white);
+            border-color: var(--blue);
+            color: var(--text);
+            transform: scale(1.05);
+        }
+
+        .memory-card.matched {
+            background: #e8f5e9;
+            border-color: var(--green);
+            color: var(--text);
+            pointer-events: none;
+        }
+
+        /* ===== COMMON GAME STYLES ===== */
+        .game-center { text-align: center; }
+
+        .big-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 24px 0;
+            color: var(--text);
+        }
+
+        .answer-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 14px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus { border-color: var(--blue); }
+
+        .submit-btn {
+            display: inline-block;
+            padding: 14px 40px;
+            background: var(--blue);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            margin-top: 16px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74,144,217,0.3);
+        }
+
+        .submit-btn.green { background: var(--green); }
+        .submit-btn.orange { background: var(--orange); }
+        .submit-btn.purple { background: var(--purple); }
+        .submit-btn.pink { background: var(--pink); }
+
+        .result-msg {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 16px 0;
+            min-height: 32px;
+        }
+
+        .correct { color: var(--green); }
+        .wrong { color: #e74c3c; }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: var(--white);
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: var(--text);
+        }
+
+        .option-btn:hover { border-color: var(--blue); background: #f5f9ff; }
+        .option-btn.selected-correct { border-color: var(--green); background: #e8f5e9; }
+        .option-btn.selected-wrong { border-color: #e74c3c; background: #fde8e8; }
+
+        .number-display {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .number-box {
+            width: 50px;
+            height: 60px;
+            border-radius: 10px;
+            background: var(--blue);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .shopping-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+
+        .spot-diff-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .spot-diff-cell {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            border: 2px solid #e0e0e0;
+            background: var(--white);
+            transition: all 0.2s;
+        }
+
+        .spot-diff-cell:hover { border-color: var(--blue); }
+        .spot-diff-cell.found { border-color: var(--green); background: #e8f5e9; }
+
+        .number-erase-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .num-cell {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .num-cell:hover { border-color: var(--green); }
+        .num-cell.erased { background: #e8f5e9; border-color: var(--green); color: var(--green); }
+        .num-cell.error { background: #fde8e8; border-color: #e74c3c; }
+
+        .shiritori-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .shiritori-word {
+            padding: 8px 16px;
+            background: #f0f4ff;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            max-width: 280px;
+            margin: 0 auto 16px;
+        }
+
+        .sudoku-cell {
+            aspect-ratio: 1;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 6px;
+        }
+
+        .sudoku-cell.fixed { background: #f0f0f0; color: var(--text); }
+
+        .sudoku-cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: inherit;
+            color: var(--purple);
+            outline: none;
+            background: transparent;
+        }
+
+        .clock-display {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid var(--purple);
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .clock-center {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--text);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        .clock-hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 4px;
+        }
+
+        .hour-hand {
+            width: 4px;
+            height: 55px;
+            background: var(--text);
+            margin-left: -2px;
+        }
+
+        .minute-hand {
+            width: 3px;
+            height: 75px;
+            background: var(--blue);
+            margin-left: -1.5px;
+        }
+
+        .clock-number {
+            position: absolute;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .quiz-question {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 20px 0;
+            line-height: 1.8;
+            text-align: center;
+        }
+
+        .cooking-steps {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .cooking-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            cursor: grab;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .cooking-step:hover { border-color: var(--pink); }
+
+        .cooking-step .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--pink);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 24px;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--blue);
+        }
+
+        .score-label { color: var(--text-light); margin-bottom: 8px; }
+
+        @media (max-width: 400px) {
+            .card-grid.g4x4, .card-grid.g4x3 { grid-template-columns: repeat(4, 60px); }
+            .memory-card { width: 60px; height: 70px; font-size: 1.5rem; }
+            .number-erase-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="home">
+    <div class="brain-icon">🧠</div>
+    <h1 class="home-title">脳トレゲーム</h1>
+    <p class="home-sub">毎日少しずつ、脳を元気に！</p>
+
+    <div class="category">
+        <div class="category-header cat-memory">🧩 記憶力</div>
+        <div class="game-grid">
+            <button class="game-card" onclick="startGame('cardFlip')">
+                <div class="g-icon">🃏</div>
+                <div class="g-name">カードめくり</div>
+                <div class="g-plays" id="plays-cardFlip">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('numberMemory')">
+                <div class="g-icon">🔢</div>
+                <div class="g-name">順番記憶</div>
+                <div class="g-plays" id="plays-numberMemory">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('shoppingList')">
+                <div class="g-icon">🛒</div>
+                <div class="g-name">買い物リスト</div>
+                <div class="g-plays" id="plays-shoppingList">未プレイ</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-header cat-attention">🎯 注意力・集中力</div>
+        <div class="game-grid">
+            <button class="game-card" onclick="startGame('spotDiff')">
+                <div class="g-icon">🔍</div>
+                <div class="g-name">間違い探し</div>
+                <div class="g-plays" id="plays-spotDiff">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('findSame')">
+                <div class="g-icon">🐣</div>
+                <div class="g-name">同じもの探し</div>
+                <div class="g-plays" id="plays-findSame">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('numberErase')">
+                <div class="g-icon">🔢</div>
+                <div class="g-name">数字抹消</div>
+                <div class="g-plays" id="plays-numberErase">未プレイ</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-header cat-language">🗣 言語・語彙力</div>
+        <div class="game-grid">
+            <button class="game-card" onclick="startGame('shiritori')">
+                <div class="g-icon">💬</div>
+                <div class="g-name">しりとり</div>
+                <div class="g-plays" id="plays-shiritori">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('nazonazo')">
+                <div class="g-icon">🤔</div>
+                <div class="g-name">なぞなぞ</div>
+                <div class="g-plays" id="plays-nazonazo">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('kanjiQuiz')">
+                <div class="g-icon">漢</div>
+                <div class="g-name">漢字クイズ</div>
+                <div class="g-plays" id="plays-kanjiQuiz">未プレイ</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-header cat-math">🧮 計算・論理力</div>
+        <div class="game-grid">
+            <button class="game-card" onclick="startGame('calcGame')">
+                <div class="g-icon">🔢</div>
+                <div class="g-name">計算ゲーム</div>
+                <div class="g-plays" id="plays-calcGame">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('sudoku')">
+                <div class="g-icon">9️⃣</div>
+                <div class="g-name">数独</div>
+                <div class="g-plays" id="plays-sudoku">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('clockRead')">
+                <div class="g-icon">🕐</div>
+                <div class="g-name">時計読み</div>
+                <div class="g-plays" id="plays-clockRead">未プレイ</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-header cat-life">🌸 生活・思い出</div>
+        <div class="game-grid">
+            <button class="game-card" onclick="startGame('musicQuiz')">
+                <div class="g-icon">🎵</div>
+                <div class="g-name">音楽クイズ</div>
+                <div class="g-plays" id="plays-musicQuiz">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('cookingOrder')">
+                <div class="g-icon">🍳</div>
+                <div class="g-name">料理の手順</div>
+                <div class="g-plays" id="plays-cookingOrder">未プレイ</div>
+            </button>
+            <button class="game-card" onclick="startGame('seasonQuiz')">
+                <div class="g-icon">🌸</div>
+                <div class="g-name">季節クイズ</div>
+                <div class="g-plays" id="plays-seasonQuiz">未プレイ</div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="gameScreen">
+    <div class="game-header">
+        <button class="back-btn" onclick="goHome()">⬅</button>
+        <div class="game-title" id="gameTitle"></div>
+        <div class="game-score" id="gameScore"></div>
+    </div>
+    <div class="game-area" id="gameArea"></div>
+</div>
+
+<script>
+var playCounts = JSON.parse(localStorage.getItem('noutore_plays') || '{}');
+
+function updatePlayCounts() {
+    Object.keys(playCounts).forEach(function(key) {
+        var el = document.getElementById('plays-' + key);
+        if (el) el.textContent = playCounts[key] + '回プレイ';
+    });
+}
+updatePlayCounts();
+
+function incrementPlay(gameId) {
+    playCounts[gameId] = (playCounts[gameId] || 0) + 1;
+    localStorage.setItem('noutore_plays', JSON.stringify(playCounts));
+    updatePlayCounts();
+}
+
+var currentGame = null;
+var gameState = {};
+
+function startGame(gameId) {
+    currentGame = gameId;
+    gameState = { score: 0, round: 0 };
+    document.getElementById('home').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+    incrementPlay(gameId);
+    window.scrollTo(0, 0);
+
+    var games = {
+        cardFlip: { title: 'カードめくり', init: initCardFlip },
+        numberMemory: { title: '順番記憶', init: initNumberMemory },
+        shoppingList: { title: '買い物リスト', init: initShoppingList },
+        spotDiff: { title: '間違い探し', init: initSpotDiff },
+        findSame: { title: '同じもの探し', init: initFindSame },
+        numberErase: { title: '数字抹消', init: initNumberErase },
+        shiritori: { title: 'しりとり', init: initShiritori },
+        nazonazo: { title: 'なぞなぞ', init: initNazonazo },
+        kanjiQuiz: { title: '漢字クイズ', init: initKanjiQuiz },
+        calcGame: { title: '計算ゲーム', init: initCalcGame },
+        sudoku: { title: '数独', init: initSudoku },
+        clockRead: { title: '時計読み', init: initClockRead },
+        musicQuiz: { title: '音楽クイズ', init: initMusicQuiz },
+        cookingOrder: { title: '料理の手順', init: initCookingOrder },
+        seasonQuiz: { title: '季節クイズ', init: initSeasonQuiz }
+    };
+
+    var g = games[gameId];
+    document.getElementById('gameTitle').textContent = g.title;
+    document.getElementById('gameScore').textContent = '';
+    g.init();
+}
+
+function goHome() {
+    document.getElementById('home').style.display = 'block';
+    document.getElementById('gameScreen').style.display = 'none';
+    currentGame = null;
+    if (gameState.timer) clearInterval(gameState.timer);
+    if (gameState.timeout) clearTimeout(gameState.timeout);
+}
+
+function setScore(s) {
+    gameState.score = s;
+    document.getElementById('gameScore').textContent = 'スコア: ' + s;
+}
+
+function showResult(score, total) {
+    var area = document.getElementById('gameArea');
+    var pct = Math.round((score / total) * 100);
+    area.innerHTML = '<div class="score-display">' +
+        '<div class="score-label">結果</div>' +
+        '<div class="final-score">' + score + ' / ' + total + '</div>' +
+        '<p style="margin:12px 0;color:var(--text-light)">' + pct + '% 正解</p>' +
+        '<p style="margin:16px 0;font-size:1.1rem">' + (pct >= 80 ? '🎉 素晴らしい！' : pct >= 50 ? '👍 よくできました！' : '💪 また挑戦しましょう！') + '</p>' +
+        '<button class="submit-btn" onclick="startGame(\'' + currentGame + '\')">もう一度</button>' +
+        ' <button class="submit-btn green" onclick="goHome()" style="margin-left:8px">ホームに戻る</button>' +
+        '</div>';
+}
+
+function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+// ===== 1. CARD FLIP =====
+function initCardFlip() {
+    var emojis = ['🍎','🍊','🍋','🍇','🌸','⭐','🎵','🐱'];
+    var pairs = shuffle(emojis.concat(emojis));
+    var flipped = [], matched = 0, moves = 0;
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">同じ絵柄のペアを見つけよう！</p><div class="card-grid g4x4" id="cardGrid"></div>';
+    var grid = document.getElementById('cardGrid');
+    pairs.forEach(function(emoji, i) {
+        var card = document.createElement('div');
+        card.className = 'memory-card';
+        card.textContent = emoji;
+        card.dataset.index = i;
+        card.addEventListener('click', function() {
+            if (flipped.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+            card.classList.add('flipped');
+            flipped.push(card);
+            if (flipped.length === 2) {
+                moves++;
+                setScore(moves);
+                if (flipped[0].textContent === flipped[1].textContent) {
+                    flipped[0].classList.add('matched');
+                    flipped[1].classList.add('matched');
+                    flipped = [];
+                    matched += 2;
+                    if (matched === pairs.length) {
+                        setTimeout(function() { showResult(16 - Math.min(moves, 16) + 8, 24); }, 500);
+                    }
+                } else {
+                    setTimeout(function() {
+                        flipped[0].classList.remove('flipped');
+                        flipped[1].classList.remove('flipped');
+                        flipped = [];
+                    }, 800);
+                }
+            }
+        });
+        grid.appendChild(card);
+    });
+    document.getElementById('gameScore').textContent = '手数: 0';
+}
+
+// ===== 2. NUMBER MEMORY =====
+function initNumberMemory() {
+    var len = 4;
+    gameState.nmLen = len;
+    showNumberSequence();
+}
+
+function showNumberSequence() {
+    var len = gameState.nmLen;
+    var nums = [];
+    for (var i = 0; i < len; i++) nums.push(randInt(1, 9));
+    gameState.nmNums = nums;
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">数字を覚えてください（' + len + '桁）</p>' +
+        '<div class="number-display">' + nums.map(function(n) { return '<div class="number-box">' + n + '</div>'; }).join('') + '</div>';
+    setScore(gameState.score);
+    gameState.timeout = setTimeout(function() {
+        area.innerHTML = '<p class="game-instruction">覚えた数字を入力してください</p>' +
+            '<div class="game-center"><input type="tel" class="answer-input" id="nmInput" maxlength="' + len + '" placeholder="数字を入力">' +
+            '<br><button class="submit-btn" onclick="checkNumberMemory()">回答</button></div>';
+        document.getElementById('nmInput').focus();
+    }, 2000 + len * 500);
+}
+
+function checkNumberMemory() {
+    var input = document.getElementById('nmInput').value;
+    var correct = gameState.nmNums.join('');
+    if (input === correct) {
+        gameState.score++;
+        gameState.nmLen++;
+        if (gameState.nmLen > 9) {
+            showResult(gameState.score, gameState.score);
+        } else {
+            setScore(gameState.score);
+            showNumberSequence();
+        }
+    } else {
+        showResult(gameState.score, gameState.score + 1);
+    }
+}
+
+// ===== 3. SHOPPING LIST =====
+function initShoppingList() {
+    var allItems = [
+        '🥕 にんじん','🥬 キャベツ','🍅 トマト','🥚 たまご','🍞 パン',
+        '🥛 牛乳','🧈 バター','🍎 りんご','🧅 たまねぎ','🥩 お肉',
+        '🐟 お魚','🧀 チーズ','🍌 バナナ','🥒 きゅうり','🍜 うどん'
+    ];
+    var items = shuffle(allItems).slice(0, 5);
+    gameState.slItems = items;
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">買い物リストを覚えてください！</p>' +
+        items.map(function(item) { return '<div class="shopping-item">' + item + '</div>'; }).join('');
+
+    gameState.timeout = setTimeout(function() {
+        var choices = shuffle(allItems).slice(0, 10);
+        items.forEach(function(item) {
+            if (choices.indexOf(item) === -1) choices[randInt(0, 4)] = item;
+        });
+        choices = shuffle(choices);
+        gameState.slSelected = [];
+        area.innerHTML = '<p class="game-instruction">リストにあった品物を5つ選んでください</p>' +
+            '<div id="slChoices">' + choices.map(function(item, i) {
+                return '<div class="shopping-item" style="cursor:pointer;border:2px solid transparent" onclick="selectShoppingItem(this,' + i + ')" data-item="' + item + '">' + item + '</div>';
+            }).join('') + '</div>' +
+            '<div class="game-center"><button class="submit-btn" onclick="checkShoppingList()">回答</button></div>';
+    }, 5000);
+}
+
+function selectShoppingItem(el, idx) {
+    var item = el.dataset.item;
+    var idx2 = gameState.slSelected.indexOf(item);
+    if (idx2 > -1) {
+        gameState.slSelected.splice(idx2, 1);
+        el.style.borderColor = 'transparent';
+        el.style.background = '#f9f9f9';
+    } else {
+        if (gameState.slSelected.length >= 5) return;
+        gameState.slSelected.push(item);
+        el.style.borderColor = 'var(--blue)';
+        el.style.background = '#f0f4ff';
+    }
+}
+
+function checkShoppingList() {
+    var correct = 0;
+    gameState.slSelected.forEach(function(item) {
+        if (gameState.slItems.indexOf(item) > -1) correct++;
+    });
+    showResult(correct, 5);
+}
+
+// ===== 4. SPOT DIFF =====
+function initSpotDiff() {
+    var emojis = ['🐶','🐱','🐭','🐹','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧'];
+    var baseGrid = [];
+    for (var i = 0; i < 9; i++) baseGrid.push(emojis[randInt(0, emojis.length - 1)]);
+    var diffIdx = randInt(0, 8);
+    var diffEmoji;
+    do { diffEmoji = emojis[randInt(0, emojis.length - 1)]; } while (diffEmoji === baseGrid[diffIdx]);
+
+    gameState.sdDiffIdx = diffIdx;
+    gameState.sdFound = false;
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">右側で違う絵文字を見つけてタップ！</p>' +
+        '<div class="spot-diff-grid" style="grid-template-columns:1fr 16px 1fr">' +
+        '<div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">' +
+        baseGrid.map(function(e) { return '<div class="spot-diff-cell" style="cursor:default">' + e + '</div>'; }).join('') +
+        '</div></div><div style="display:flex;align-items:center;justify-content:center;color:var(--text-light)">VS</div>' +
+        '<div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px" id="sdRight">' +
+        baseGrid.map(function(e, i) {
+            var emoji = (i === diffIdx) ? diffEmoji : e;
+            return '<div class="spot-diff-cell" onclick="checkSpotDiff(this,' + i + ')" data-idx="' + i + '">' + emoji + '</div>';
+        }).join('') +
+        '</div></div></div>' +
+        '<div class="result-msg" id="sdResult"></div>';
+    setScore(0);
+}
+
+function checkSpotDiff(el, idx) {
+    if (gameState.sdFound) return;
+    if (idx === gameState.sdDiffIdx) {
+        gameState.sdFound = true;
+        el.classList.add('found');
+        document.getElementById('sdResult').innerHTML = '<span class="correct">🎉 正解！見つけました！</span>';
+        setScore(1);
+        setTimeout(function() { showResult(1, 1); }, 1500);
+    } else {
+        el.style.borderColor = '#e74c3c';
+        document.getElementById('sdResult').innerHTML = '<span class="wrong">❌ そこではありません</span>';
+        setTimeout(function() {
+            el.style.borderColor = '#e0e0e0';
+            document.getElementById('sdResult').textContent = '';
+        }, 600);
+    }
+}
+
+// ===== 5. FIND SAME =====
+function initFindSame() {
+    var emojis = ['🐶','🐱','🐭','🐹','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷'];
+    var target = emojis[randInt(0, emojis.length - 1)];
+    var grid = [];
+    for (var i = 0; i < 12; i++) grid.push(emojis[randInt(0, emojis.length - 1)]);
+    var count = randInt(3, 5);
+    var positions = [];
+    while (positions.length < count) {
+        var p = randInt(0, 11);
+        if (positions.indexOf(p) === -1) positions.push(p);
+    }
+    positions.forEach(function(p) { grid[p] = target; });
+
+    gameState.fsTarget = target;
+    gameState.fsCount = count;
+    gameState.fsFound = 0;
+    gameState.fsPositions = positions;
+
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">「' + target + '」を全部見つけてタップ！（' + count + '個）</p>' +
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="fsGrid">' +
+        grid.map(function(e, i) {
+            return '<div class="spot-diff-cell" onclick="checkFindSame(this,' + i + ')">' + e + '</div>';
+        }).join('') +
+        '</div><div class="result-msg" id="fsResult"></div>';
+    setScore('0/' + count);
+}
+
+function checkFindSame(el, idx) {
+    if (el.classList.contains('found')) return;
+    if (gameState.fsPositions.indexOf(idx) > -1) {
+        el.classList.add('found');
+        gameState.fsFound++;
+        setScore(gameState.fsFound + '/' + gameState.fsCount);
+        if (gameState.fsFound === gameState.fsCount) {
+            document.getElementById('fsResult').innerHTML = '<span class="correct">🎉 全部見つけました！</span>';
+            setTimeout(function() { showResult(gameState.fsCount, gameState.fsCount); }, 1000);
+        }
+    } else {
+        el.style.borderColor = '#e74c3c';
+        setTimeout(function() { el.style.borderColor = '#e0e0e0'; }, 400);
+    }
+}
+
+// ===== 6. NUMBER ERASE =====
+function initNumberErase() {
+    var target = randInt(1, 9);
+    var grid = [];
+    for (var i = 0; i < 25; i++) grid.push(randInt(1, 9));
+    var targetCount = 0;
+    grid.forEach(function(n) { if (n === target) targetCount++; });
+    if (targetCount < 3) {
+        for (var j = 0; j < 3 - targetCount; j++) {
+            grid[randInt(0, 24)] = target;
+        }
+        targetCount = 0;
+        grid.forEach(function(n) { if (n === target) targetCount++; });
+    }
+    gameState.neTarget = target;
+    gameState.neCount = targetCount;
+    gameState.neFound = 0;
+
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">「' + target + '」を全て見つけてタップ！</p>' +
+        '<div class="number-erase-grid" id="neGrid">' +
+        grid.map(function(n, i) {
+            return '<div class="num-cell" onclick="checkNumErase(this,' + n + ')">' + n + '</div>';
+        }).join('') +
+        '</div><div class="result-msg" id="neResult"></div>';
+    setScore('0/' + targetCount);
+}
+
+function checkNumErase(el, num) {
+    if (el.classList.contains('erased')) return;
+    if (num === gameState.neTarget) {
+        el.classList.add('erased');
+        gameState.neFound++;
+        setScore(gameState.neFound + '/' + gameState.neCount);
+        if (gameState.neFound === gameState.neCount) {
+            document.getElementById('neResult').innerHTML = '<span class="correct">🎉 完了！</span>';
+            setTimeout(function() { showResult(gameState.neCount, gameState.neCount); }, 1000);
+        }
+    } else {
+        el.classList.add('error');
+        setTimeout(function() { el.classList.remove('error'); }, 400);
+    }
+}
+
+// ===== 7. SHIRITORI =====
+function initShiritori() {
+    var words = ['りんご','ゴリラ','ラッパ','パンダ','ダチョウ','うさぎ','ギター','タンポポ','ポスト','トマト',
+                 'さくら','ラーメン','めだか','カメラ','ラジオ','おにぎり','りす','すいか','かばん','んぼう'];
+    gameState.srWords = ['しりとり'];
+    gameState.srScore = 0;
+    gameState.srRound = 0;
+    renderShiritori();
+}
+
+function renderShiritori() {
+    var area = document.getElementById('gameArea');
+    var lastWord = gameState.srWords[gameState.srWords.length - 1];
+    var lastChar = lastWord.charAt(lastWord.length - 1);
+    area.innerHTML = '<p class="game-instruction">「' + lastChar + '」から始まる言葉を入力！</p>' +
+        '<div class="shiritori-list">' + gameState.srWords.map(function(w) { return '<span class="shiritori-word">' + w + '</span>'; }).join('') + '</div>' +
+        '<div class="game-center"><input type="text" class="answer-input" id="srInput" placeholder="' + lastChar + 'から始まる言葉">' +
+        '<br><button class="submit-btn orange" onclick="checkShiritori()">送信</button></div>' +
+        '<div class="result-msg" id="srResult"></div>';
+    var input = document.getElementById('srInput');
+    input.focus();
+    input.addEventListener('keypress', function(e) { if (e.key === 'Enter') checkShiritori(); });
+}
+
+function checkShiritori() {
+    var input = document.getElementById('srInput').value.trim();
+    var lastWord = gameState.srWords[gameState.srWords.length - 1];
+    var lastChar = lastWord.charAt(lastWord.length - 1);
+    if (!input) return;
+    if (input.charAt(0) !== lastChar) {
+        document.getElementById('srResult').innerHTML = '<span class="wrong">「' + lastChar + '」から始めてください</span>';
+        return;
+    }
+    if (input.charAt(input.length - 1) === 'ん') {
+        document.getElementById('srResult').innerHTML = '<span class="wrong">「ん」で終わるので負けです！</span>';
+        setTimeout(function() { showResult(gameState.srScore, gameState.srScore + 1); }, 1500);
+        return;
+    }
+    if (gameState.srWords.indexOf(input) > -1) {
+        document.getElementById('srResult').innerHTML = '<span class="wrong">もう使われた言葉です</span>';
+        return;
+    }
+    gameState.srWords.push(input);
+    gameState.srScore++;
+    gameState.srRound++;
+    setScore(gameState.srScore);
+    if (gameState.srRound >= 10) {
+        showResult(gameState.srScore, 10);
+    } else {
+        renderShiritori();
+    }
+}
+
+// ===== 8. NAZONAZO =====
+function initNazonazo() {
+    var quizzes = [
+        { q: 'パンはパンでも食べられないパンは？', a: 'フライパン', opts: ['フライパン','カレーパン','メロンパン','あんパン'] },
+        { q: '逆さまにすると軽くなる動物は？', a: 'イルカ', opts: ['イルカ','クジラ','イヌ','ネコ'] },
+        { q: '切っても切っても減らないものは？', a: 'トランプ', opts: ['トランプ','ケーキ','紙','ロープ'] },
+        { q: '上がっても下がっても動かないものは？', a: '温度', opts: ['階段','温度','エレベーター','飛行機'] },
+        { q: '何度叩いても怒らないものは？', a: '太鼓', opts: ['太鼓','壁','テーブル','枕'] },
+        { q: '走れば走るほど残るものは？', a: '足あと', opts: ['足あと','汗','時間','体力'] },
+        { q: 'お父さんカエルはケロケロ。お母さんカエルもケロケロ。では子どものカエルは？', a: 'オタマジャクシなので鳴かない', opts: ['オタマジャクシなので鳴かない','ケロ','ケロケロケロ','ゲコゲコ'] },
+        { q: '空から降ってくる靴は？', a: 'レインブーツ', opts: ['レインブーツ','スニーカー','サンダル','長靴'] }
+    ];
+    gameState.nzQuizzes = shuffle(quizzes).slice(0, 5);
+    gameState.nzIdx = 0;
+    gameState.nzScore = 0;
+    showNazonazo();
+}
+
+function showNazonazo() {
+    if (gameState.nzIdx >= gameState.nzQuizzes.length) {
+        showResult(gameState.nzScore, gameState.nzQuizzes.length);
+        return;
+    }
+    var q = gameState.nzQuizzes[gameState.nzIdx];
+    var opts = shuffle(q.opts);
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">第' + (gameState.nzIdx + 1) + '問</p>' +
+        '<p class="quiz-question">' + q.q + '</p>' +
+        '<div class="options-grid">' + opts.map(function(o) {
+            return '<button class="option-btn" onclick="answerNazonazo(this,\'' + o.replace(/'/g, "\\'") + '\')">' + o + '</button>';
+        }).join('') + '</div>' +
+        '<div class="result-msg" id="nzResult"></div>';
+    setScore(gameState.nzScore + '/' + gameState.nzQuizzes.length);
+}
+
+function answerNazonazo(el, answer) {
+    var q = gameState.nzQuizzes[gameState.nzIdx];
+    var btns = document.querySelectorAll('.option-btn');
+    btns.forEach(function(b) { b.disabled = true; });
+    if (answer === q.a) {
+        el.classList.add('selected-correct');
+        gameState.nzScore++;
+        document.getElementById('nzResult').innerHTML = '<span class="correct">⭕ 正解！</span>';
+    } else {
+        el.classList.add('selected-wrong');
+        btns.forEach(function(b) { if (b.textContent === q.a) b.classList.add('selected-correct'); });
+        document.getElementById('nzResult').innerHTML = '<span class="wrong">❌ 残念！答えは「' + q.a + '」</span>';
+    }
+    gameState.nzIdx++;
+    setTimeout(showNazonazo, 2000);
+}
+
+// ===== 9. KANJI QUIZ =====
+function initKanjiQuiz() {
+    var quizzes = [
+        { kanji: '薔薇', reading: 'ばら', opts: ['ばら','つばき','ぼたん','さくら'] },
+        { kanji: '向日葵', reading: 'ひまわり', opts: ['ひまわり','あさがお','たんぽぽ','すみれ'] },
+        { kanji: '蒲公英', reading: 'たんぽぽ', opts: ['たんぽぽ','ひまわり','あじさい','すずらん'] },
+        { kanji: '紫陽花', reading: 'あじさい', opts: ['あじさい','あやめ','ふじ','ぼたん'] },
+        { kanji: '蜻蛉', reading: 'とんぼ', opts: ['とんぼ','せみ','ちょう','ばった'] },
+        { kanji: '河豚', reading: 'ふぐ', opts: ['ふぐ','たい','さば','いわし'] },
+        { kanji: '海月', reading: 'くらげ', opts: ['くらげ','ひとで','いか','たこ'] },
+        { kanji: '団栗', reading: 'どんぐり', opts: ['どんぐり','くるみ','くり','まつぼっくり'] },
+        { kanji: '時雨', reading: 'しぐれ', opts: ['しぐれ','にわかあめ','きりさめ','つゆ'] },
+        { kanji: '土竜', reading: 'もぐら', opts: ['もぐら','りす','ねずみ','うさぎ'] }
+    ];
+    gameState.kjQuizzes = shuffle(quizzes).slice(0, 5);
+    gameState.kjIdx = 0;
+    gameState.kjScore = 0;
+    showKanjiQuiz();
+}
+
+function showKanjiQuiz() {
+    if (gameState.kjIdx >= gameState.kjQuizzes.length) {
+        showResult(gameState.kjScore, gameState.kjQuizzes.length);
+        return;
+    }
+    var q = gameState.kjQuizzes[gameState.kjIdx];
+    var opts = shuffle(q.opts);
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">この漢字の読みは？</p>' +
+        '<div class="big-text">' + q.kanji + '</div>' +
+        '<div class="options-grid">' + opts.map(function(o) {
+            return '<button class="option-btn" onclick="answerKanji(this,\'' + o + '\')">' + o + '</button>';
+        }).join('') + '</div>' +
+        '<div class="result-msg" id="kjResult"></div>';
+    setScore(gameState.kjScore + '/' + gameState.kjQuizzes.length);
+}
+
+function answerKanji(el, answer) {
+    var q = gameState.kjQuizzes[gameState.kjIdx];
+    var btns = document.querySelectorAll('.option-btn');
+    btns.forEach(function(b) { b.disabled = true; });
+    if (answer === q.reading) {
+        el.classList.add('selected-correct');
+        gameState.kjScore++;
+        document.getElementById('kjResult').innerHTML = '<span class="correct">⭕ 正解！</span>';
+    } else {
+        el.classList.add('selected-wrong');
+        btns.forEach(function(b) { if (b.textContent === q.reading) b.classList.add('selected-correct'); });
+        document.getElementById('kjResult').innerHTML = '<span class="wrong">❌ 答えは「' + q.reading + '」</span>';
+    }
+    gameState.kjIdx++;
+    setTimeout(showKanjiQuiz, 2000);
+}
+
+// ===== 10. CALC GAME =====
+function initCalcGame() {
+    gameState.caRound = 0;
+    gameState.caScore = 0;
+    gameState.caTotal = 10;
+    showCalcProblem();
+}
+
+function showCalcProblem() {
+    if (gameState.caRound >= gameState.caTotal) {
+        showResult(gameState.caScore, gameState.caTotal);
+        return;
+    }
+    var ops = ['+', '-', '×'];
+    var op = ops[randInt(0, 2)];
+    var a, b, answer;
+    if (op === '+') { a = randInt(1, 50); b = randInt(1, 50); answer = a + b; }
+    else if (op === '-') { a = randInt(10, 99); b = randInt(1, a); answer = a - b; }
+    else { a = randInt(2, 12); b = randInt(2, 12); answer = a * b; }
+
+    gameState.caAnswer = answer;
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">第' + (gameState.caRound + 1) + '問 / ' + gameState.caTotal + '</p>' +
+        '<div class="big-text">' + a + ' ' + op + ' ' + b + ' = ?</div>' +
+        '<div class="game-center"><input type="tel" class="answer-input" id="caInput" placeholder="答えを入力">' +
+        '<br><button class="submit-btn purple" onclick="checkCalc()">回答</button></div>' +
+        '<div class="result-msg" id="caResult"></div>';
+    var input = document.getElementById('caInput');
+    input.focus();
+    input.addEventListener('keypress', function(e) { if (e.key === 'Enter') checkCalc(); });
+    setScore(gameState.caScore + '/' + gameState.caTotal);
+}
+
+function checkCalc() {
+    var input = parseInt(document.getElementById('caInput').value);
+    gameState.caRound++;
+    if (input === gameState.caAnswer) {
+        gameState.caScore++;
+        document.getElementById('caResult').innerHTML = '<span class="correct">⭕ 正解！</span>';
+    } else {
+        document.getElementById('caResult').innerHTML = '<span class="wrong">❌ 答えは ' + gameState.caAnswer + '</span>';
+    }
+    setTimeout(showCalcProblem, 1200);
+}
+
+// ===== 11. SUDOKU (4x4 simple) =====
+function initSudoku() {
+    var solutions = [
+        [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3],
+        [2,1,4,3, 4,3,2,1, 1,4,3,2, 3,2,1,4],
+        [3,4,1,2, 1,2,3,4, 4,1,2,3, 2,3,4,1]
+    ];
+    var sol = solutions[randInt(0, solutions.length - 1)];
+    var puzzle = sol.slice();
+    var blanks = [];
+    while (blanks.length < 6) {
+        var idx = randInt(0, 15);
+        if (blanks.indexOf(idx) === -1) { blanks.push(idx); puzzle[idx] = 0; }
+    }
+    gameState.suSol = sol;
+    gameState.suBlanks = blanks;
+
+    var area = document.getElementById('gameArea');
+    var html = '<p class="game-instruction">空マスに1〜4の数字を入れよう！</p><div class="sudoku-grid">';
+    puzzle.forEach(function(n, i) {
+        if (n === 0) {
+            html += '<div class="sudoku-cell"><input type="tel" maxlength="1" id="su' + i + '" data-idx="' + i + '"></div>';
+        } else {
+            html += '<div class="sudoku-cell fixed">' + n + '</div>';
+        }
+    });
+    html += '</div><div class="game-center"><button class="submit-btn purple" onclick="checkSudoku()">チェック</button></div>' +
+        '<div class="result-msg" id="suResult"></div>';
+    area.innerHTML = html;
+}
+
+function checkSudoku() {
+    var correct = 0;
+    gameState.suBlanks.forEach(function(idx) {
+        var input = document.getElementById('su' + idx);
+        var val = parseInt(input.value);
+        if (val === gameState.suSol[idx]) {
+            correct++;
+            input.style.color = 'var(--green)';
+        } else {
+            input.style.color = '#e74c3c';
+        }
+    });
+    if (correct === gameState.suBlanks.length) {
+        document.getElementById('suResult').innerHTML = '<span class="correct">🎉 全問正解！</span>';
+        setTimeout(function() { showResult(correct, gameState.suBlanks.length); }, 1500);
+    } else {
+        document.getElementById('suResult').innerHTML = '<span class="wrong">' + correct + '/' + gameState.suBlanks.length + ' 正解。もう一度試してみよう！</span>';
+    }
+}
+
+// ===== 12. CLOCK READ =====
+function initClockRead() {
+    gameState.clRound = 0;
+    gameState.clScore = 0;
+    gameState.clTotal = 5;
+    showClockProblem();
+}
+
+function showClockProblem() {
+    if (gameState.clRound >= gameState.clTotal) {
+        showResult(gameState.clScore, gameState.clTotal);
+        return;
+    }
+    var h = randInt(1, 12);
+    var m = [0, 15, 30, 45][randInt(0, 3)];
+    gameState.clAnswer = h + ':' + (m < 10 ? '0' + m : m);
+
+    var hAngle = (h % 12) * 30 + m * 0.5;
+    var mAngle = m * 6;
+
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">この時計は何時何分？</p>' +
+        '<div class="clock-display" id="clockFace"><div class="clock-center"></div>' +
+        '<div class="clock-hand hour-hand" style="transform:rotate(' + hAngle + 'deg)"></div>' +
+        '<div class="clock-hand minute-hand" style="transform:rotate(' + mAngle + 'deg)"></div>' +
+        '</div>';
+
+    var clockFace = document.getElementById('clockFace');
+    for (var i = 1; i <= 12; i++) {
+        var angle = (i * 30 - 90) * Math.PI / 180;
+        var x = 50 + 40 * Math.cos(angle);
+        var y = 50 + 40 * Math.sin(angle);
+        var numEl = document.createElement('div');
+        numEl.className = 'clock-number';
+        numEl.textContent = i;
+        numEl.style.left = x + '%';
+        numEl.style.top = y + '%';
+        numEl.style.transform = 'translate(-50%, -50%)';
+        clockFace.appendChild(numEl);
+    }
+
+    var opts = [gameState.clAnswer];
+    while (opts.length < 4) {
+        var rh = randInt(1, 12);
+        var rm = [0, 15, 30, 45][randInt(0, 3)];
+        var opt = rh + ':' + (rm < 10 ? '0' + rm : rm);
+        if (opts.indexOf(opt) === -1) opts.push(opt);
+    }
+    opts = shuffle(opts);
+    area.innerHTML += '<div class="options-grid">' + opts.map(function(o) {
+        return '<button class="option-btn" onclick="answerClock(this,\'' + o + '\')">' + o + '</button>';
+    }).join('') + '</div><div class="result-msg" id="clResult"></div>';
+    setScore(gameState.clScore + '/' + gameState.clTotal);
+}
+
+function answerClock(el, answer) {
+    var btns = document.querySelectorAll('.option-btn');
+    btns.forEach(function(b) { b.disabled = true; });
+    gameState.clRound++;
+    if (answer === gameState.clAnswer) {
+        el.classList.add('selected-correct');
+        gameState.clScore++;
+        document.getElementById('clResult').innerHTML = '<span class="correct">⭕ 正解！</span>';
+    } else {
+        el.classList.add('selected-wrong');
+        btns.forEach(function(b) { if (b.textContent === gameState.clAnswer) b.classList.add('selected-correct'); });
+        document.getElementById('clResult').innerHTML = '<span class="wrong">❌ 答えは ' + gameState.clAnswer + '</span>';
+    }
+    setTimeout(showClockProblem, 1800);
+}
+
+// ===== 13. MUSIC QUIZ =====
+function initMusicQuiz() {
+    var quizzes = [
+        { q: '「♪ 春の小川は さらさら行くよ」この曲は？', a: '春の小川', opts: ['春の小川','朧月夜','花','春が来た'] },
+        { q: '「♪ うさぎ追いし かの山」この曲は？', a: 'ふるさと', opts: ['ふるさと','赤とんぼ','里の秋','村祭'] },
+        { q: '「♪ 夕焼け小焼けの 赤とんぼ」この曲は？', a: '赤とんぼ', opts: ['赤とんぼ','夕焼け小焼け','七つの子','かなりや'] },
+        { q: '「♪ 菜の花畑に 入日薄れ」この曲は？', a: '朧月夜', opts: ['朧月夜','花','春の小川','荒城の月'] },
+        { q: '「♪ 雪やこんこ あられやこんこ」この曲は？', a: '雪', opts: ['雪','冬景色','たき火','お正月'] },
+        { q: '「♪ 静かな湖畔の 森の影から」この曲は？', a: '静かな湖畔', opts: ['静かな湖畔','森のくまさん','大きな古時計','線路は続くよどこまでも'] },
+        { q: '「♪ 夏も近づく 八十八夜」この曲は？', a: '茶摘', opts: ['茶摘','夏は来ぬ','海','われは海の子'] },
+        { q: '「♪ 月が〜出た出た〜 月が〜出た〜」この曲は？', a: '炭坑節', opts: ['炭坑節','荒城の月','月の砂漠','十五夜お月さん'] }
+    ];
+    gameState.mqQuizzes = shuffle(quizzes).slice(0, 5);
+    gameState.mqIdx = 0;
+    gameState.mqScore = 0;
+    showMusicQuiz();
+}
+
+function showMusicQuiz() {
+    if (gameState.mqIdx >= gameState.mqQuizzes.length) {
+        showResult(gameState.mqScore, gameState.mqQuizzes.length);
+        return;
+    }
+    var q = gameState.mqQuizzes[gameState.mqIdx];
+    var opts = shuffle(q.opts);
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">第' + (gameState.mqIdx + 1) + '問</p>' +
+        '<p class="quiz-question">' + q.q + '</p>' +
+        '<div class="options-grid">' + opts.map(function(o) {
+            return '<button class="option-btn" onclick="answerMusic(this,\'' + o + '\')">' + o + '</button>';
+        }).join('') + '</div>' +
+        '<div class="result-msg" id="mqResult"></div>';
+    setScore(gameState.mqScore + '/' + gameState.mqQuizzes.length);
+}
+
+function answerMusic(el, answer) {
+    var q = gameState.mqQuizzes[gameState.mqIdx];
+    var btns = document.querySelectorAll('.option-btn');
+    btns.forEach(function(b) { b.disabled = true; });
+    if (answer === q.a) {
+        el.classList.add('selected-correct');
+        gameState.mqScore++;
+        document.getElementById('mqResult').innerHTML = '<span class="correct">⭕ 正解！</span>';
+    } else {
+        el.classList.add('selected-wrong');
+        btns.forEach(function(b) { if (b.textContent === q.a) b.classList.add('selected-correct'); });
+        document.getElementById('mqResult').innerHTML = '<span class="wrong">❌ 答えは「' + q.a + '」</span>';
+    }
+    gameState.mqIdx++;
+    setTimeout(showMusicQuiz, 2000);
+}
+
+// ===== 14. COOKING ORDER =====
+function initCookingOrder() {
+    var recipes = [
+        { name: 'カレーライス', steps: ['野菜とお肉を切る','鍋で油を熱してお肉を炒める','野菜を加えて炒める','水を加えて煮込む','カレールーを入れて溶かす','ご飯にかけて盛り付ける'] },
+        { name: '味噌汁', steps: ['だし汁を鍋で温める','豆腐やわかめなどの具材を切る','だし汁に具材を入れる','具材に火が通ったら火を止める','味噌を溶き入れる','お椀に盛り付ける'] },
+        { name: '卵焼き', steps: ['卵をボウルに割り入れる','砂糖と醤油で味付けする','よくかき混ぜる','フライパンに油を引いて熱する','卵液を少しずつ流し入れて巻く','形を整えて切り分ける'] },
+        { name: 'おにぎり', steps: ['ご飯を炊く','手に水と塩をつける','ご飯を手に取る','具材を中に入れる','三角形に握る','海苔を巻く'] }
+    ];
+    var recipe = recipes[randInt(0, recipes.length - 1)];
+    gameState.coCorrect = recipe.steps.slice();
+    var shuffled = shuffle(recipe.steps);
+    gameState.coSteps = shuffled;
+    gameState.coSelected = [];
+
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">「' + recipe.name + '」の正しい手順に並べ替えよう！<br>順番にタップしてください</p>' +
+        '<div id="coList">' + shuffled.map(function(s, i) {
+            return '<div class="cooking-step" onclick="selectCookingStep(this,' + i + ')" data-idx="' + i + '"><span class="step-num">?</span>' + s + '</div>';
+        }).join('') + '</div>' +
+        '<div class="game-center"><button class="submit-btn pink" onclick="checkCookingOrder()">回答</button></div>' +
+        '<div class="result-msg" id="coResult"></div>';
+}
+
+function selectCookingStep(el, idx) {
+    var step = gameState.coSteps[idx];
+    var selIdx = gameState.coSelected.indexOf(step);
+    if (selIdx > -1) {
+        gameState.coSelected.splice(selIdx, 1);
+        el.querySelector('.step-num').textContent = '?';
+        el.style.borderColor = 'transparent';
+        // Re-number remaining
+        document.querySelectorAll('.cooking-step').forEach(function(s) {
+            var sStep = gameState.coSteps[parseInt(s.dataset.idx)];
+            var sIdx = gameState.coSelected.indexOf(sStep);
+            if (sIdx > -1) s.querySelector('.step-num').textContent = sIdx + 1;
+        });
+    } else {
+        gameState.coSelected.push(step);
+        el.querySelector('.step-num').textContent = gameState.coSelected.length;
+        el.style.borderColor = 'var(--pink)';
+    }
+}
+
+function checkCookingOrder() {
+    if (gameState.coSelected.length !== gameState.coCorrect.length) {
+        document.getElementById('coResult').innerHTML = '<span class="wrong">全ての手順を選んでください</span>';
+        return;
+    }
+    var correct = 0;
+    gameState.coSelected.forEach(function(s, i) {
+        if (s === gameState.coCorrect[i]) correct++;
+    });
+    showResult(correct, gameState.coCorrect.length);
+}
+
+// ===== 15. SEASON QUIZ =====
+function initSeasonQuiz() {
+    var quizzes = [
+        { q: '「桜」が咲く季節は？', a: '春', opts: ['春','夏','秋','冬'] },
+        { q: '「お正月」はどの季節の行事？', a: '冬', opts: ['春','夏','秋','冬'] },
+        { q: '「七夕」はどの季節の行事？', a: '夏', opts: ['春','夏','秋','冬'] },
+        { q: '「紅葉狩り」はどの季節？', a: '秋', opts: ['春','夏','秋','冬'] },
+        { q: '「お盆」はどの季節の行事？', a: '夏', opts: ['春','夏','秋','冬'] },
+        { q: '「節分の豆まき」はどの季節？', a: '冬', opts: ['春','夏','秋','冬'] },
+        { q: '「ひな祭り」はどの季節の行事？', a: '春', opts: ['春','夏','秋','冬'] },
+        { q: '「十五夜のお月見」はどの季節？', a: '秋', opts: ['春','夏','秋','冬'] },
+        { q: '「コスモス」が咲く季節は？', a: '秋', opts: ['春','夏','秋','冬'] },
+        { q: '「ひまわり」が咲く季節は？', a: '夏', opts: ['春','夏','秋','冬'] }
+    ];
+    gameState.seQuizzes = shuffle(quizzes).slice(0, 5);
+    gameState.seIdx = 0;
+    gameState.seScore = 0;
+    showSeasonQuiz();
+}
+
+function showSeasonQuiz() {
+    if (gameState.seIdx >= gameState.seQuizzes.length) {
+        showResult(gameState.seScore, gameState.seQuizzes.length);
+        return;
+    }
+    var q = gameState.seQuizzes[gameState.seIdx];
+    var seasonEmojis = { '春': '🌸', '夏': '🌻', '秋': '🍁', '冬': '⛄' };
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '<p class="game-instruction">第' + (gameState.seIdx + 1) + '問</p>' +
+        '<p class="quiz-question">' + q.q + '</p>' +
+        '<div class="options-grid">' + q.opts.map(function(o) {
+            return '<button class="option-btn" onclick="answerSeason(this,\'' + o + '\')" style="font-size:1.3rem">' + seasonEmojis[o] + ' ' + o + '</button>';
+        }).join('') + '</div>' +
+        '<div class="result-msg" id="seResult"></div>';
+    setScore(gameState.seScore + '/' + gameState.seQuizzes.length);
+}
+
+function answerSeason(el, answer) {
+    var q = gameState.seQuizzes[gameState.seIdx];
+    var btns = document.querySelectorAll('.option-btn');
+    btns.forEach(function(b) { b.disabled = true; });
+    if (answer === q.a) {
+        el.classList.add('selected-correct');
+        gameState.seScore++;
+        document.getElementById('seResult').innerHTML = '<span class="correct">⭕ 正解！</span>';
+    } else {
+        el.classList.add('selected-wrong');
+        btns.forEach(function(b) { if (b.textContent.includes(q.a)) b.classList.add('selected-correct'); });
+        document.getElementById('seResult').innerHTML = '<span class="wrong">❌ 答えは「' + q.a + '」</span>';
+    }
+    gameState.seIdx++;
+    setTimeout(showSeasonQuiz, 2000);
+}
+</script>
+
+</body>
+</html>
