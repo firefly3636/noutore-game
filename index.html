@@ -2,7 +2,10 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>脳トレゲーム - 毎日少しずつ、脳を元気に！</title>
     <meta name="description" content="認知機能を楽しく鍛える脳トレゲーム。記憶力、注意力、言語力、計算力、生活力の5カテゴリ15種類のゲームで毎日脳を元気に。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -157,6 +160,8 @@
         .memory-card {
             width: 70px;
             height: 80px;
+            min-width: 60px;
+            min-height: 70px;
             border-radius: 10px;
             border: 2px solid #e0e0e0;
             background: linear-gradient(135deg, var(--blue), #6ab0ff);
@@ -165,23 +170,56 @@
             align-items: center;
             justify-content: center;
             font-size: 1.8rem;
-            transition: transform 0.3s;
+            font-weight: 900;
+            line-height: 1;
+            transition: transform 0.2s, background 0.2s;
             color: transparent;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            font-family: "Noto Sans JP", sans-serif;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+
+        .memory-card .memory-card-face {
+            display: none;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .memory-card.flipped .memory-card-face {
+            display: flex;
         }
 
         .memory-card.flipped {
-            background: var(--white);
-            border-color: var(--blue);
-            color: var(--text);
+            background: var(--card-face-color);
+            border-color: rgba(0,0,0,0.2);
+            color: transparent;
             transform: scale(1.05);
         }
 
         .memory-card.matched {
-            background: #e8f5e9;
+            background: var(--card-face-color);
             border-color: var(--green);
-            color: var(--text);
             pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .memory-card.matched .memory-card-face {
+            display: flex;
+        }
+
+        @media (max-width: 400px) {
+            .memory-card .memory-card-face { font-size: 1.4rem; }
         }
 
         /* ===== COMMON GAME STYLES ===== */
@@ -739,26 +777,58 @@ function shuffle(arr) {
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
 // ===== 1. CARD FLIP =====
+// 絵文字を使わず「文字+色」で表示＝全デバイス100%対応
+var CARD_PAIRS = [
+    { letter: 'A', color: '#e74c3c' },
+    { letter: 'B', color: '#f39c12' },
+    { letter: 'C', color: '#f1c40f' },
+    { letter: 'D', color: '#2ecc71' },
+    { letter: 'E', color: '#3498db' },
+    { letter: 'F', color: '#9b59b6' },
+    { letter: 'G', color: '#e84393' },
+    { letter: 'H', color: '#1abc9c' }
+];
+
+function addCardFlipHandler(card, handleFlip) {
+    var lastTap = 0;
+    function doFlip(e) {
+        if (e.type === 'touchend') {
+            e.preventDefault();
+            var now = Date.now();
+            if (now - lastTap < 400) return;
+            lastTap = now;
+        }
+        handleFlip();
+    }
+    card.addEventListener('click', doFlip);
+    card.addEventListener('touchend', doFlip, { passive: false });
+}
+
 function initCardFlip() {
-    var emojis = ['🍎','🍊','🍋','🍇','🌸','⭐','🎵','🐱'];
-    var pairs = shuffle(emojis.concat(emojis));
+    var pairs = shuffle(CARD_PAIRS.concat(CARD_PAIRS));
     var flipped = [], matched = 0, moves = 0;
     var area = document.getElementById('gameArea');
-    area.innerHTML = '<p class="game-instruction">同じ絵柄のペアを見つけよう！</p><div class="card-grid g4x4" id="cardGrid"></div>';
+    area.innerHTML = '<p class="game-instruction">同じ色・文字のペアを見つけよう！</p><div class="card-grid g4x4" id="cardGrid"></div>';
     var grid = document.getElementById('cardGrid');
-    pairs.forEach(function(emoji, i) {
+    pairs.forEach(function(pair, i) {
         var card = document.createElement('div');
         card.className = 'memory-card';
-        card.textContent = emoji;
-        card.dataset.index = i;
-        card.addEventListener('click', function() {
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', 'カード ' + (i + 1));
+        card.style.setProperty('--card-face-color', pair.color);
+        card.dataset.pairId = pair.letter;
+        var face = document.createElement('span');
+        face.className = 'memory-card-face';
+        face.textContent = pair.letter;
+        card.appendChild(face);
+        addCardFlipHandler(card, function() {
             if (flipped.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
             card.classList.add('flipped');
             flipped.push(card);
             if (flipped.length === 2) {
                 moves++;
                 setScore(moves);
-                if (flipped[0].textContent === flipped[1].textContent) {
+                if (flipped[0].dataset.pairId === flipped[1].dataset.pairId) {
                     flipped[0].classList.add('matched');
                     flipped[1].classList.add('matched');
                     flipped = [];
